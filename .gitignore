@@ -1,3 +1,10 @@
+/back/static/
+
+# Only for Development only
+**/migrations/**
+#!**/migrations
+!**/migrations/__init__.py
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -60,6 +67,8 @@ cover/
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
+EksmoProjectDB.sqlite3
+EksmoProjectDB.sqlite3-journal
 
 # Flask stuff:
 instance/
@@ -120,7 +129,7 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-#.env
+.env
 .venv
 env/
 venv/
