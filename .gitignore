@@ -1,4 +1,5 @@
 /back/static/
+!*.gitkeep
 
 # Only for Development only
 **/migrations/**

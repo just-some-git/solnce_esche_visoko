@@ -20,7 +20,7 @@ class Question(models.Model):
         verbose_name = 'Вопрос'
         verbose_name_plural = 'Вопросы'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.__class__.__name__} - {self.audio_path}{self.audio_name}'
 
 
@@ -42,10 +42,6 @@ class Answer(models.Model):
         help_text='Текст ответа персонажа',
         verbose_name='Текст',
     )
-    time_frames = models.JSONField(
-        verbose_name='Тайм-фреймы озвучки',
-        help_text='В формате JSON',
-    )
     question = models.OneToOneField(
         to=Question,
         on_delete=models.CASCADE,
@@ -57,5 +53,5 @@ class Answer(models.Model):
         verbose_name = 'Ответ'
         verbose_name_plural = 'Ответы'
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f'{self.__class__.__name__} - {self.audio_path}{self.audio_name}'
