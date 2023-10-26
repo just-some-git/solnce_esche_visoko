@@ -63,9 +63,9 @@ def question(request: HttpRequest) -> HttpResponseBase:
         )
     if request.method == 'POST':
         try:
-            file = request.FILES['file']
+            file = request.FILES['audio']
         except KeyError as e:
-            return HttpResponseServerError('Invalid or missing header: %s' % e)
+            return HttpResponseServerError('Invalid or missing field: %s' % e)
 
         fs = FileSystemStorage(location=MEDIA_ROOT_QUESTIONS)
         input_file = fs.save(
