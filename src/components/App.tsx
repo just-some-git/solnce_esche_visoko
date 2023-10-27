@@ -2,13 +2,13 @@ import { FC, useEffect, useState } from 'react';
 import useRecordQuestion from '../hooks/useRecordQuestion';
 
 const App: FC = () => {
-	const [isMicro, setIsMicro] = useState(true);
+	const [isMicro, setIsMicro] = useState<boolean>(true);
 
-	const [animNeznaika, setAnimNeznaika] = useState('i_do_not_no_hello');
-	const [durationAudio, setDurationAudio] = useState(0);
-	const [textRequest, setTextRequest] = useState('');
+	const [animNeznaika, setAnimNeznaika] = useState<string>('i_do_not_no_hello');
+	const [durationAudio, setDurationAudio] = useState<number>(0);
+	const [textRequest, setTextRequest] = useState<string>('');
 
-	const [viewResponce, setViewResponce] = useState(false);
+	const [viewResponce, setViewResponce] = useState<boolean>(false);
 
 	const { recording, startRecording, stopRecording, sendAudio } =
 		useRecordQuestion();
