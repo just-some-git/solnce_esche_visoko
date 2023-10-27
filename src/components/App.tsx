@@ -6,6 +6,7 @@ const App: FC = () => {
 
 	const [animNeznaika, setAnimNeznaika] = useState('i_do_not_no_hello');
 	const [durationAudio, setDurationAudio] = useState(0);
+	const [textRequest, setTextRequest] = useState('');
 
 	const [viewResponce, setViewResponce] = useState(false);
 
@@ -108,10 +109,24 @@ const App: FC = () => {
 		}
 	};
 
+	const addText = async () => {
+		try {
+			const responce = await fetch(
+				'https://n0fl3x.pythonanywhere.com/answers/example.mp3/'
+			);
+			const data = await responce.json();
+			const text = data.text;
+			setTextRequest(text);
+		} catch (error) {
+			console.log(error);
+		}
+	};
+
 	const handleMicroClickStop = async () => {
 		if (!isMicro) {
 			await stopRecording();
 			await receiveAudioStream();
+			await addText();
 			await playAudio(receivedAudioUrl);
 			console.log('stop');
 			setIsMicro(!isMicro);
@@ -126,21 +141,18 @@ const App: FC = () => {
 		}
 	};
 
+	useEffect(() => {
+		if (!viewResponce) {
+			setAnimNeznaika('i_do_not_no_hello');
+		}
+	}, [viewResponce]);
+
 	return (
 		<div className='wrapper__app'>
 			{!viewResponce ? (
 				<img className='app__hello' src='./images/hello.png' alt='hello' />
 			) : (
-				<p className='text_answer'>
-					Lorem ipsum dolor sit amet consectetur adipisicing elit. Quaerat
-					asperiores neque quod ad nam rem perferendis eaque quo molestias
-					mollitia ducimus ex, modi unde labore explicabo, laboriosam magnam
-					numquam ipsum? Lorem ipsum dolor sit, amet consectetur adipisicing
-					elit. Dignissimos ipsam quam accusamus adipisci, veniam deserunt,
-					autem eum nemo at vitae maiores. Ut magnam modi iste esse, voluptatem
-					error quis possimus! Lorem ipsum dolor sit amet consectetur
-					adipisicing elit.
-				</p>
+				<p className='text_answer'>{textRequest}</p>
 			)}
 			<div
 				className='animation'
