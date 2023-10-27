@@ -74,7 +74,7 @@ const App: FC = () => {
 
 			try {
 				const response = await fetch(
-					'https://n0fl3x.pythonanywhere.com/questions/',
+					'http://127.0.0.1:8000/questions/',
 					{
 						method: 'POST',
 						body: formData,
@@ -125,7 +125,7 @@ const App: FC = () => {
 			// 	'https://n0fl3x.pythonanywhere.com/answers/example.mp3/'
 			// );
 			const responce = await fetch(
-				`https://n0fl3x.pythonanywhere.com/answers/${nameAudio}/`
+				`http://127.0.0.1:8000/answers/${nameAudio}/`
 			);
 			const data = await responce.json();
 			const text = data.text;

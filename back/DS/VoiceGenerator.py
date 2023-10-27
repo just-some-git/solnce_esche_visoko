@@ -29,17 +29,20 @@ class VoiceGenerator:
         self.voice.settings.stability = 0.1
 
     @staticmethod
-    def _get_unique_filename(prefix: str, extension: str) -> tuple[str, str]:
-        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    def _get_unique_filename(filename: str, extension: str) -> tuple[str, str]:
         folder = MEDIA_ROOT_ANSWERS
-        filename = f"{prefix}_{timestamp}.{extension}"
-        full_path = os.path.join(folder, filename)
-        return full_path, filename
+        full_name = filename + extension
+        full_path = os.path.join(folder, full_name)
+        return full_path, full_name
 
-    def load_path(self, path: str) -> dict:
+    def load_path(self, path: str, filename: str) -> dict:
         options = {"language": "RU"}
-        audio = whisper.load_audio(path)
-        result = whisper.transcribe(self.model, audio, **options)
+        audio = whisper.load_audio(file=path)
+        result = whisper.transcribe(
+            model=self.model,
+            audio=audio,
+            **options,
+        )
         request_text = result["text"]
 
         prompt = request_text + '''расскажи как бы объяснил Незнайка. Ответ должен быть короткий и шуточный.\
@@ -67,8 +70,8 @@ class VoiceGenerator:
             model='eleven_multilingual_v2',
         )
         audio_response_path = self._get_unique_filename(
-            prefix="audio_response",
-            extension="wav",
+            extension=".wav",
+            filename=filename,
         )
 
         with open(audio_response_path[0], "wb") as audio_file:
@@ -79,5 +82,4 @@ class VoiceGenerator:
             "answer_name": audio_response_path[-1],
             "answer_text": generated_text,
         }
-
         return result

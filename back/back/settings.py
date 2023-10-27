@@ -54,7 +54,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
 
     # Additional middlewares:
-    'corsheadres.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     # ---
     
     'django.middleware.common.CommonMiddleware',
