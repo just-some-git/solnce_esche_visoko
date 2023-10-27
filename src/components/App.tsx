@@ -1,4 +1,5 @@
 import { FC, useEffect, useState } from 'react';
+import useActualeDate from '../hooks/useActualDate';
 import useRecordQuestion from '../hooks/useRecordQuestion';
 
 const App: FC = () => {
@@ -7,6 +8,10 @@ const App: FC = () => {
 	const [animNeznaika, setAnimNeznaika] = useState<string>('i_do_not_no_hello');
 	const [durationAudio, setDurationAudio] = useState<number>(0);
 	const [textRequest, setTextRequest] = useState<string>('');
+
+	let nameAudio;
+
+	const { actualDate } = useActualeDate();
 
 	const [viewResponce, setViewResponce] = useState<boolean>(false);
 
@@ -62,7 +67,11 @@ const App: FC = () => {
 
 		if (audioBlob) {
 			const formData = new FormData();
+			nameAudio = actualDate();
+			console.log(nameAudio);
+			formData.append('name', nameAudio);
 			formData.append('audio', audioBlob);
+
 			try {
 				const response = await fetch(
 					'https://n0fl3x.pythonanywhere.com/questions/',
@@ -90,6 +99,7 @@ const App: FC = () => {
 				const audioUrl = URL.createObjectURL(audioBlob);
 				receivedAudioUrl = audioUrl;
 				console.log('Аудиофайл успешно получен:', audioUrl);
+				console.log([...response.headers.entries()]);
 				/////
 				getAudioDuration(audioUrl)
 					.then(duration => {
@@ -111,8 +121,11 @@ const App: FC = () => {
 
 	const addText = async () => {
 		try {
+			// const responce = await fetch(
+			// 	'https://n0fl3x.pythonanywhere.com/answers/example.mp3/'
+			// );
 			const responce = await fetch(
-				'https://n0fl3x.pythonanywhere.com/answers/example.mp3/'
+				`https://n0fl3x.pythonanywhere.com/answers/${nameAudio}/`
 			);
 			const data = await responce.json();
 			const text = data.text;
