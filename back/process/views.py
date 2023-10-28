@@ -35,11 +35,10 @@ def create_response(output_json: dict, pk: int) -> HttpResponseBase:
     )
     Answer.objects.create(
         audio_path=path,
-        audio_name=filename,
+        audio_name=filename.split(sep='.')[0],  # TODO: исправить этот костыль
         text=text,
         question=quest,
     )
-
     response = FileResponse(
         open(
             file=path + filename,
@@ -47,10 +46,8 @@ def create_response(output_json: dict, pk: int) -> HttpResponseBase:
         ),
         filename=filename,
     )
-
     response['Content-Disposition'] = 'attachment; filename=' + filename
     response['X-Sendfile'] = filename
-
     return response
 
 
@@ -59,29 +56,35 @@ def question(request: HttpRequest) -> HttpResponseBase:
     if request.method == 'GET':
         return JsonResponse(
             status=200,
-            data={'message': 'Hello!'},
+            data={
+                'status': 200,
+                'message': 'Hello!',
+            },
         )
     if request.method == 'POST':
         try:
+            name = request.POST['name']
             file = request.FILES['audio']
         except KeyError as e:
             return HttpResponseServerError('Invalid or missing field: %s' % e)
 
         fs = FileSystemStorage(location=MEDIA_ROOT_QUESTIONS)
         input_file = fs.save(
-            name=file.name,
+            name=name,
             content=file,
         )
         file_path = os.path.abspath(os.path.join(MEDIA_ROOT_QUESTIONS, input_file))
-
         new_question = Question.objects.create(
             audio_path=MEDIA_ROOT_QUESTIONS,
-            audio_name=file.name,
+            audio_name=name,
         )
         new_question_id = new_question.pk
 
         try:
-            result = generator.load_path(path=file_path)
+            result = generator.load_path(
+                path=file_path,
+                filename=name,
+            )
         except FileNotFoundError as e:
             return HttpResponseServerError('Cannot find file: %s' % e)
 
@@ -89,8 +92,8 @@ def question(request: HttpRequest) -> HttpResponseBase:
             output_json=result,
             pk=new_question_id,
         )
-
         return response
+    return HttpResponseBadRequest()
 
 
 def answer_text(request: HttpRequest, answer_id: str) -> HttpResponseBase:
@@ -108,11 +111,9 @@ def answer_text(request: HttpRequest, answer_id: str) -> HttpResponseBase:
                 'filename': answer_id,
                 'text': ans.text,
             }
-
             return JsonResponse(
                 status=200,
                 data=data,
                 safe=False,
             )
-
     return HttpResponseBadRequest()
