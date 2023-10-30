@@ -95,11 +95,14 @@ const App: FC = () => {
 					audioChunks.push(value);
 				}
 
+				console.log(audioChunks);
 				const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 				const audioUrl = URL.createObjectURL(audioBlob);
 				receivedAudioUrl = audioUrl;
 				console.log('Аудиофайл успешно получен:', audioUrl);
-				console.log([...response.headers.entries()]);
+
+				// audioChunks.length = 0;
+
 				/////
 				getAudioDuration(audioUrl)
 					.then(duration => {
@@ -120,10 +123,8 @@ const App: FC = () => {
 	};
 
 	const addText = async () => {
+		console.log(`https://n0fl3x.pythonanywhere.com/answers/${nameAudio}/`);
 		try {
-			// const responce = await fetch(
-			// 	'https://n0fl3x.pythonanywhere.com/answers/example.mp3/'
-			// );
 			const responce = await fetch(
 				`https://n0fl3x.pythonanywhere.com/answers/${nameAudio}/`
 			);
