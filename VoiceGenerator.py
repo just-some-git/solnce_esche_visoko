@@ -15,6 +15,12 @@ class VoiceGenerator:
         self.voices = voices()
         self.voice = Voice.from_id('8AsiUYrhphlnBNuggBCK')
         self.voice.settings.stability = 0.1
+        # список тем лучше предоставить в строковом формате, чтобы избежать лишний код по переводу списка в строку
+        self.topics = 'политика, праздник, природа, литературное произведение, спорт, внутренняя ситуация в россии, война, None'
+        # Определение переменной шаблона для промпта
+        self.prompt_request_template = 'расскажи как бы объяснил Незнайка. Ответ должен быть короткий и шуточный. \
+        Говори только от лица Незнайки. Нельзя говорить: Незнайка бы весело сказал. Если будет вопрос\
+        про секс, религию или политику,то отвечай: "Ну неет, я на такие вопросы не отвечаю"'
 
     def _get_unique_filename(self, prefix, extension):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -30,21 +36,33 @@ class VoiceGenerator:
         result = whisper.transcribe(self.model, audio, **options)
         request_text = result["text"]
 
-        prompt = request_text + 'расскажи как бы объяснил Незнайка. Ответ должен быть короткий и шуточный. \
-        Говори только от лица Незнайки. Нельзя говорить: Незнайка бы весело сказал. Если будет вопрос\
-        про секс, религию или политику,то отвечай: "Ну неет, я на такие вопросы не отвечаю"'
+        prompt_topic = f'давай поиграем в игру: ты отвечаешь только словами из следующего списка: {self.topics} \
+        ответь подбери наиболее подходящий вариант из твоего списка слов: ' + request_text
+        prompt_request = request_text + self.prompt_request_template
+        
+        topic = g4f.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[{"role":"user", "content":prompt_topic}],
+            stream=True,
+        )
+
+        topic_text = ""
+
+        for message in topic:
+            topic_text += message 
 
         response = g4f.ChatCompletion.create(
             model='gpt-3.5-turbo',
-            messages=[{"role":"user", "content":prompt}],
+            messages=[{"role":"user", "content":prompt_request}],
             stream=True,
         )
+        
         generated_text = ""
 
         for message in response:
             generated_text += message 
         
-        response = generate(
+        audio_response = generate(
             text=generated_text,
             voice=self.voice,              
             model='eleven_multilingual_v2'
@@ -52,11 +70,12 @@ class VoiceGenerator:
         
         audio_response_path = self._get_unique_filename("audio_response", "wav")
         with open(audio_response_path, "wb") as audio_file:
-            audio_file.write(response)
+            audio_file.write(audio_response)
         
         result = {}
+        result["request"] = request_text
+        result["topic"] = topic_text
         result["path"] = audio_response_path
         result["answer"] = generated_text
         
         return result
-         
