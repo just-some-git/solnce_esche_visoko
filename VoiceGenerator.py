@@ -25,10 +25,27 @@ class VoiceGenerator:
     def _get_unique_filename(self, prefix, extension):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
         folder = "answer"
+        # проверяем наличие папки аnswer, если она отсутствует, то создаем новую
+        if not os.path.exists(folder):
+            os.makedirs(folder)
+            
         filename = f"{prefix}_{timestamp}.{extension}"
         full_path = os.path.join(folder, filename)
 
         return full_path
+    
+    def _use_GPT(self, prompt):
+        response = g4f.ChatCompletion.create(
+            model='gpt-3.5-turbo',
+            messages=[{"role":"user", "content":prompt}],
+            stream=True,
+        )
+        
+        text = ""
+        for message in response:
+            text += message
+            
+        return text
 
     def load_path(self, path):
         options = {"language": "RU"}
@@ -38,29 +55,13 @@ class VoiceGenerator:
 
         prompt_topic = f'давай поиграем в игру: ты отвечаешь только словами из следующего списка: {self.topics} \
         ответь подбери наиболее подходящий вариант из твоего списка слов: ' + request_text
+        prompt_emo = request_text + ' - определи эмоцию вопроса из вариантов: веселая, нейтральная, грустная, озабоченная. \
+            ответ должен быть одним словом из предложенных эмоций'
         prompt_request = request_text + self.prompt_request_template
         
-        topic = g4f.ChatCompletion.create(
-            model='gpt-3.5-turbo',
-            messages=[{"role":"user", "content":prompt_topic}],
-            stream=True,
-        )
-
-        topic_text = ""
-
-        for message in topic:
-            topic_text += message 
-
-        response = g4f.ChatCompletion.create(
-            model='gpt-3.5-turbo',
-            messages=[{"role":"user", "content":prompt_request}],
-            stream=True,
-        )
-        
-        generated_text = ""
-
-        for message in response:
-            generated_text += message 
+        topic_text = self._use_GPT(prompt_topic)
+        emo_text = self._use_GPT(prompt_emo)
+        generated_text = self._use_GPT(prompt_request)
         
         audio_response = generate(
             text=generated_text,
@@ -75,6 +76,7 @@ class VoiceGenerator:
         result = {}
         result["request"] = request_text
         result["topic"] = topic_text
+        result["emotion"] = emo_text
         result["path"] = audio_response_path
         result["answer"] = generated_text
         
