@@ -1,55 +1,84 @@
-import { useRef, useState } from 'react';
+// import { useState } from 'react';
+
+// const useRecordQuestion = () => {
+// 	const [text, setText] = useState('');
+
+// 	const recognition = new (window.SpeechRecognition ||
+// 		window.webkitSpeechRecognition)();
+
+// 	recognition.lang = 'ru-RU';
+
+// 	recognition.onresult = function (event) {
+// 		const result = event.results[0][0];
+
+// 		if (result.isFinal) {
+// 			setText(result.transcript);
+// 			console.log('text:', result.transcript); // Вывести результат после обновления
+// 		}
+// 	};
+
+// 	const startReq = () => {
+// 		recognition.start();
+// 		console.log('start');
+// 	};
+
+// 	return { startReq, text };
+// };
+
+// export default useRecordQuestion;
+
+// import { useState } from 'react';
+
+// const useRecordQuestion = () => {
+// 	const [text, setText] = useState('');
+
+// 	const recognition = new (window.SpeechRecognition ||
+// 		window.webkitSpeechRecognition)();
+
+// 	recognition.lang = 'ru-RU';
+
+// 	const startReq = () => {
+// 		recognition.start();
+// 	};
+
+// 	recognition.onresult = function (event) {
+// 		const transcript = event.results[0][0].transcript;
+
+// 		// console.log('text', transcript);
+
+// 		console.log('text', text);
+// 		setText(transcript);
+// 	};
+
+// 	return { startReq, text };
+// };
+
+// export default useRecordQuestion;
+
+import { useEffect, useState } from 'react';
 
 const useRecordQuestion = () => {
-	const [recording, setRecording] = useState(false);
-	const [audioChunks, setAudioChunks] = useState([]);
-	const mediaRecorderRef = useRef(null);
+	const [text, setText] = useState('');
 
-	const startRecording = () => {
-		if (!recording) {
-			navigator.mediaDevices
-				.getUserMedia({ audio: true })
-				.then(stream => {
-					const mediaRecorder = new MediaRecorder(stream);
-					mediaRecorder.ondataavailable = e => {
-						if (e.data.size > 0) {
-							setAudioChunks([e.data]);
-							console.log('setAudio', audioChunks);
-						}
-					};
+	const recognition = new (window.SpeechRecognition ||
+		window.webkitSpeechRecognition)();
 
-					mediaRecorder.start();
-					mediaRecorderRef.current = mediaRecorder;
-					setRecording(true);
-				})
-				.catch(error =>
-					console.error('Ошибка при доступе к микрофону:', error)
-				);
-		}
+	recognition.lang = 'ru-RU';
+
+	recognition.onresult = function (event) {
+		const transcript = event.results[0][0].transcript;
+		setText(transcript);
 	};
 
-	const stopRecording = () => {
-		if (
-			mediaRecorderRef.current &&
-			mediaRecorderRef.current.state === 'recording'
-		) {
-			mediaRecorderRef.current.stop();
-			setRecording(false);
-		}
+	useEffect(() => {
+		console.log('use:', text);
+	}, [text]);
+
+	const startReq = () => {
+		recognition.start();
 	};
 
-	const sendAudio = () => {
-		if (audioChunks.length > 0) {
-			const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-
-			return { audioBlob, sendAudio: sendAudio };
-		} else {
-			const emptyBlob = new Blob([], { type: 'audio/wav' });
-			return { audioBlob: emptyBlob };
-		}
-	};
-
-	return { recording, startRecording, stopRecording, sendAudio };
+	return { startReq, text };
 };
 
 export default useRecordQuestion;

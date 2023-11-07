@@ -15,8 +15,7 @@ const App: FC = () => {
 
 	const [viewResponce, setViewResponce] = useState<boolean>(false);
 
-	const { recording, startRecording, stopRecording, sendAudio } =
-		useRecordQuestion();
+	const { startReq, text } = useRecordQuestion();
 
 	// const durationAnimate = lengthAudio => { TODO: ЕСЛИ ПОНАДОБИТЬСЯ ПОВТОРЯТЬ АНИМАЦИЮ
 	// 	let repeatAnim = lengthAudio / 3;
@@ -178,6 +177,7 @@ const App: FC = () => {
 			<button onClick={() => setAnimNeznaika('i_do_not_no_hello')}>
 				кнопка 3
 			</button>
+			<button onClick={startReq}>тест записи</button>
 			{!viewResponce ? (
 				<img className='app__hello' src='./images/hello.png' alt='hello' />
 			) : (
