@@ -68,6 +68,7 @@ const App: FC = () => {
 		if (audioBlob) {
 			const formData = new FormData();
 			nameAudio = actualDate();
+
 			console.log(nameAudio);
 			formData.append('name', nameAudio);
 			formData.append('audio', audioBlob);
@@ -101,8 +102,6 @@ const App: FC = () => {
 				receivedAudioUrl = audioUrl;
 				console.log('Аудиофайл успешно получен:', audioUrl);
 
-				// audioChunks.length = 0;
-
 				/////
 				getAudioDuration(audioUrl)
 					.then(duration => {
@@ -124,7 +123,9 @@ const App: FC = () => {
 
 	const addText = async () => {
 		console.log(`https://n0fl3x.pythonanywhere.com/answers/${nameAudio}/`);
+
 		try {
+			console.log('text', receivedAudioUrl);
 			const responce = await fetch(
 				`https://n0fl3x.pythonanywhere.com/answers/${nameAudio}/`
 			);
@@ -163,6 +164,20 @@ const App: FC = () => {
 
 	return (
 		<div className='wrapper__app'>
+			<button
+				onClick={() => {
+					setAnimNeznaika('i_do_not_no');
+					setTimeout(() => setAnimNeznaika('i_do_not_no_hello'), 3000);
+				}}
+			>
+				кнопка 1
+			</button>
+			<button onClick={() => setAnimNeznaika('i_do_not_no_wait')}>
+				кнопка 2
+			</button>
+			<button onClick={() => setAnimNeznaika('i_do_not_no_hello')}>
+				кнопка 3
+			</button>
 			{!viewResponce ? (
 				<img className='app__hello' src='./images/hello.png' alt='hello' />
 			) : (

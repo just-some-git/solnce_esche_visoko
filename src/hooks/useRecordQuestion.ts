@@ -14,6 +14,7 @@ const useRecordQuestion = () => {
 					mediaRecorder.ondataavailable = e => {
 						if (e.data.size > 0) {
 							setAudioChunks([e.data]);
+							console.log('setAudio', audioChunks);
 						}
 					};
 
@@ -42,11 +43,10 @@ const useRecordQuestion = () => {
 			const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 
 			return { audioBlob, sendAudio: sendAudio };
+		} else {
+			const emptyBlob = new Blob([], { type: 'audio/wav' });
+			return { audioBlob: emptyBlob };
 		}
-		// else {
-		// 	const emptyBlob = new Blob([], { type: 'audio/wav' });
-		// 	return { audioBlob: emptyBlob };
-		// }
 	};
 
 	return { recording, startRecording, stopRecording, sendAudio };
