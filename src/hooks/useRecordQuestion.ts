@@ -1,9 +1,13 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 const useRecordQuestion = () => {
 	const [recording, setRecording] = useState(false);
 	const [audioChunks, setAudioChunks] = useState([]);
 	const mediaRecorderRef = useRef(null);
+
+	useEffect(() => {
+		console.log('ok');
+	}, [recording]);
 
 	const startRecording = () => {
 		if (!recording) {
