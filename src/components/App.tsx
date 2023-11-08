@@ -9,24 +9,19 @@ const App: FC = () => {
 	const [durationAudio, setDurationAudio] = useState<number>(0);
 	const [textRequest, setTextRequest] = useState<string>('');
 
+	let text = '';
+
 	let nameAudio;
 
 	const { actualDate } = useActualeDate();
 
 	const [viewResponce, setViewResponce] = useState<boolean>(false);
 
-	const { startReq, text } = useRecordQuestion();
+	const { startReq, recognition, stopReq } = useRecordQuestion();
 
-	// const durationAnimate = lengthAudio => { TODO: ЕСЛИ ПОНАДОБИТЬСЯ ПОВТОРЯТЬ АНИМАЦИЮ
-	// 	let repeatAnim = lengthAudio / 3;
-	// 	console.log('durationAudio', lengthAudio);
-	// 	console.log(repeatAnim);
-	// 	return repeatAnim;
-	// };
-
-	// useEffect(() => {
-	// 	durationAnimate(durationAudio);
-	// }, [durationAudio]);
+	useEffect(() => {
+		console.log('use:', text);
+	}, [text]);
 
 	useEffect(() => {
 		let anim = setTimeout(() => {
@@ -62,69 +57,61 @@ const App: FC = () => {
 	};
 
 	const receiveAudioStream = async () => {
-		const { audioBlob } = sendAudio();
+		const formData = new FormData();
+		nameAudio = actualDate();
 
-		if (audioBlob) {
-			const formData = new FormData();
-			nameAudio = actualDate();
+		console.log(nameAudio);
+		formData.append('name', nameAudio);
+		formData.append('text', text);
 
-			console.log(nameAudio);
-			formData.append('name', nameAudio);
-			formData.append('audio', audioBlob);
+		try {
+			const response = await fetch(
+				'https://n0fl3x.pythonanywhere.com/questions/',
+				{
+					method: 'POST',
+					body: formData,
+				}
+			);
+			const audioStream = response.body;
 
-			try {
-				const response = await fetch(
-					'https://n0fl3x.pythonanywhere.com/questions/',
-					{
-						method: 'POST',
-						body: formData,
-					}
-				);
-				const audioStream = response.body;
+			// console.log('header', [...response.headers.entries()]);
 
-				const reader = audioStream.getReader();
-				const audioChunks = [];
+			const reader = audioStream.getReader();
+			const audioChunks = [];
 
-				while (true) {
-					const { done, value } = await reader.read();
+			while (true) {
+				const { done, value } = await reader.read();
 
-					if (done) {
-						break;
-					}
-
-					audioChunks.push(value);
+				if (done) {
+					break;
 				}
 
-				console.log(audioChunks);
-				const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-				const audioUrl = URL.createObjectURL(audioBlob);
-				receivedAudioUrl = audioUrl;
-				console.log('Аудиофайл успешно получен:', audioUrl);
-
-				/////
-				getAudioDuration(audioUrl)
-					.then(duration => {
-						console.log('Длительность аудиофайла:', duration, 'секунд');
-						setDurationAudio(duration);
-					})
-					.catch(error => {
-						console.error(
-							'Ошибка при получении длительности аудиофайла:',
-							error
-						);
-					});
-				/////
-			} catch (error) {
-				console.error('Ошибка при загрузке аудиофайла:', error);
+				audioChunks.push(value);
 			}
+
+			console.log(audioChunks);
+			const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+			const audioUrl = URL.createObjectURL(audioBlob);
+			receivedAudioUrl = audioUrl;
+			console.log('Аудиофайл успешно получен:', audioUrl);
+
+			/////
+			getAudioDuration(audioUrl)
+				.then(duration => {
+					console.log('Длительность аудиофайла:', duration, 'секунд');
+					setDurationAudio(duration);
+				})
+				.catch(error => {
+					console.error('Ошибка при получении длительности аудиофайла:', error);
+				});
+			/////
+		} catch (error) {
+			console.error('Ошибка при загрузке аудиофайла:', error);
 		}
 	};
 
 	const addText = async () => {
-		console.log(`https://n0fl3x.pythonanywhere.com/answers/${nameAudio}/`);
-
 		try {
-			console.log('text', receivedAudioUrl);
 			const responce = await fetch(
 				`https://n0fl3x.pythonanywhere.com/answers/${nameAudio}/`
 			);
@@ -136,22 +123,22 @@ const App: FC = () => {
 		}
 	};
 
-	const handleMicroClickStop = async () => {
-		if (!isMicro) {
-			await stopRecording();
-			await receiveAudioStream();
-			await addText();
-			await playAudio(receivedAudioUrl);
-			console.log('stop');
-			setIsMicro(!isMicro);
-		}
-	};
+	// const handleMicroClickStop = async () => {
+	// 	if (!isMicro) {
+	// 		await stopReq();
+	// 		await receiveAudioStream();
+	// 		await addText();
+	// 		await playAudio(receivedAudioUrl);
+	// 		console.log('stop');
+	// 		setIsMicro(!isMicro);
+	// 	}
+	// };
 
 	const handleMicroClickPlay = () => {
 		if (isMicro) {
-			startRecording();
+			startReq();
 			console.log('play');
-			setIsMicro(!isMicro);
+			setIsMicro(false);
 		}
 	};
 
@@ -160,6 +147,19 @@ const App: FC = () => {
 			setAnimNeznaika('i_do_not_no_hello');
 		}
 	}, [viewResponce]);
+
+	recognition.onresult = async function (event) {
+		const transcript = event.results[0][0].transcript;
+		text = transcript;
+
+		if (event.results[0].isFinal) {
+			setIsMicro(true);
+		}
+
+		await receiveAudioStream();
+		await addText();
+		await playAudio(receivedAudioUrl);
+	};
 
 	return (
 		<div className='wrapper__app'>
@@ -177,7 +177,6 @@ const App: FC = () => {
 			<button onClick={() => setAnimNeznaika('i_do_not_no_hello')}>
 				кнопка 3
 			</button>
-			<button onClick={startReq}>тест записи</button>
 			{!viewResponce ? (
 				<img className='app__hello' src='./images/hello.png' alt='hello' />
 			) : (
@@ -197,10 +196,7 @@ const App: FC = () => {
 						onClick={handleMicroClickPlay}
 					/>
 				) : (
-					<div
-						className='app__micro_active'
-						onClick={handleMicroClickStop}
-					></div>
+					<div className='app__micro_active'></div>
 				)}
 			</div>
 		</div>
