@@ -1,15 +1,11 @@
-import whisper
 from elevenlabs import set_api_key, voices, generate
 from elevenlabs.api import Voice
 import g4f
 import os
 from datetime import datetime
 
-class VoiceGenerator:
+class VoiceGeneratorFromText:
     def __init__(self):
-        # load whisper model
-        self.model = whisper.load_model("medium") 
-        # load voice generator model
         self.API_KEY = 'e8674ea3cacda897ad20e57e6786fa26'
         set_api_key(self.API_KEY) 
         self.voices = voices()
@@ -61,16 +57,12 @@ class VoiceGenerator:
             
         return text
 
-    def load_path(self, path):
+    def generate_answer(self, text):
         result = {}
         result["timestamp"] = "start " + datetime.now().strftime("%M:%S")
-        options = {"language": "RU"}
-        audio = whisper.load_audio(path)
-        result = whisper.transcribe(self.model, audio, **options)
-        request_text = result["text"]
-
-        prompt_topic = f'давай поиграем в игру: ты отвечаешь только словами из следующего списка: {self.topics} \
-        ответь подбери наиболее подходящий вариант из твоего списка слов: ' + request_text
+        request_text = text
+        prompt_topic = f'{request_text} определи тему вопроса из предложенных тем: {self.topics} \
+        Представь, что ты можешь точно определить тему и выведи только одно единственное ее название'
         prompt_emo = request_text + ' - определи эмоцию вопроса из вариантов: веселая, нейтральная, грустная, озабоченная. \
             ответ должен быть одним словом из предложенных эмоций'
         prompt_request = request_text + self.prompt_request_template

@@ -1,13 +1,13 @@
-from VoiceGenerator import VoiceGenerator
+from VoiceGeneratorFromText import VoiceGeneratorFromText
 
-generator = VoiceGenerator()
+generator = VoiceGeneratorFromText()
 
 # Вызов метода load_path, передавая путь к аудиофайлу
-result = generator.load_path("hny.wav")
+result = generator.generate_answer("почему пилюлькин такой вредный?")
 
 # Получение результата
-print("Считанный текст запроса:", result["request"])
 print("Тема запроса:", result["topic"])
 print("Эмоция запроса:", result["emotion"])
 print("Путь к аудиофайлу:", result["path"])
 print("Сгенерированный текст ответа:", result["answer"])
+print("Лог времени:", result["timestamp"])
