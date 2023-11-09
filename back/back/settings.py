@@ -142,12 +142,20 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
-# Media settings
+# Windows media settings
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_ROOT_QUESTIONS = MEDIA_ROOT + '\\questions\\'
 MEDIA_ROOT_ANSWERS = MEDIA_ROOT + '\\answers\\'
+
+
+# Linux media settings
+
+# MEDIA_URL = '/media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+# MEDIA_ROOT_QUESTIONS = MEDIA_ROOT + 'questions/'
+# MEDIA_ROOT_ANSWERS = MEDIA_ROOT + 'answers/'
 
 
 # CORS settings:

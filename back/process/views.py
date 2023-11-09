@@ -16,10 +16,10 @@ from django.http import (
 
 from back.settings import MEDIA_ROOT_QUESTIONS, MEDIA_ROOT_ANSWERS
 from .models import Question, Answer
-# from DS.VoiceGenerator import VoiceGenerator
+from DS.VoiceGenerator import VoiceGenerator
 
 
-# generator = VoiceGenerator()
+generator = VoiceGenerator()
 
 
 def create_response(output_json: dict, pk: int) -> HttpResponseBase:
@@ -48,7 +48,6 @@ def create_response(output_json: dict, pk: int) -> HttpResponseBase:
         filename=filename,
     )
     response['Content-Disposition'] = 'attachment; filename=' + filename
-    # response['X-Sendfile'] = filename
     return response
 
 
@@ -64,9 +63,8 @@ def question(request: HttpRequest) -> HttpResponseBase:
         )
     if request.method == 'POST':
         try:
-            # name = request.POST['name']
-            now = datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-            wav_name = now + '.wav'
+            name = request.POST['name']
+            wav_name = name + '.wav'
             file = request.FILES['audio']
         except KeyError as e:
             return HttpResponseServerError('Invalid or missing field: %s' % e)
@@ -76,7 +74,7 @@ def question(request: HttpRequest) -> HttpResponseBase:
             name=wav_name,
             content=file,
         )
-        # file_path = os.path.abspath(os.path.join(MEDIA_ROOT_QUESTIONS, input_file))
+        file_path = os.path.abspath(os.path.join(MEDIA_ROOT_QUESTIONS, input_file))
 
         new_question = Question.objects.create(
             audio_path=MEDIA_ROOT_QUESTIONS,
@@ -84,25 +82,13 @@ def question(request: HttpRequest) -> HttpResponseBase:
         )
         new_question_id = new_question.pk
 
-        output_fs = FileSystemStorage(location=MEDIA_ROOT_ANSWERS)
-        output_file = output_fs.save(
-            name=wav_name,
-            content=file,
-        )
-
-        # try:
-        #     result = generator.load_path(
-        #         path=file_path,
-        #         filename=name,
-        #     )
-        # except FileNotFoundError as e:
-        #     return HttpResponseServerError('Cannot find file: %s' % e)
-
-        result = {
-            "answer_path": MEDIA_ROOT_ANSWERS,
-            "answer_name": wav_name,
-            "answer_text": f"generated_text_{now}",
-        }
+        try:
+            result = generator.load_path(
+                path=file_path,
+                filename=name,
+            )
+        except FileNotFoundError as e:
+            return HttpResponseServerError('Cannot find file: %s' % e)
 
         response = create_response(
             output_json=result,
