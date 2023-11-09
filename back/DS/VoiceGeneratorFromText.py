@@ -18,9 +18,9 @@ load_dotenv(find_dotenv())
 
 class VoiceGeneratorFromText:
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.API_KEY = os.getenv('VG_API_KEY')
-        set_api_key(self.API_KEY) 
+        set_api_key(self.API_KEY)
         self.voices = voices()
         self.voice = Voice.from_id(os.getenv('VOICE_ID'))
         self.voice.settings.stability = 0.1
@@ -53,7 +53,7 @@ class VoiceGeneratorFromText:
 
         return full_path, filename
 
-    def _use_GPT(self, prompt) -> str:
+    def _use_GPT(self, prompt: str) -> str:
         response = g4f.ChatCompletion.create(
             model='gpt-3.5-turbo',
             messages=[
@@ -64,14 +64,14 @@ class VoiceGeneratorFromText:
             ],
             stream=True,
         )
-        
+
         text = ""
         for message in response:
             text += message
-            
+
         return text
 
-    def generate_answer(self, text: str) -> dict:
+    def generate_answer(self, text: str) -> dict[str, str]:
         # инициализация словаря - результата запроса
         # фиксация времени начала выполнения кода
         result = {"timestamp": "start " + datetime.now().strftime("%M:%S")}
@@ -95,14 +95,13 @@ class VoiceGeneratorFromText:
         result["timestamp"] += " text emo " + datetime.now().strftime("%M:%S")
         generated_text = self._use_GPT(prompt_request)
         result["timestamp"] += " text generated " + datetime.now().strftime("%M:%S")
-        
-        # синтезируем речь 
+
+        # синтезируем речь
         audio_response = generate(
             text=generated_text,
-            voice=self.voice,              
+            voice=self.voice,
             model='eleven_multilingual_v2',
         )
-        
         audio_response_path = self._get_unique_filename(
             prefix="audio_response",
             extension="wav",
@@ -118,9 +117,8 @@ class VoiceGeneratorFromText:
 
         result["filename"] = audio_response_path[-1]
         result["path"] = audio_response_path[0]
-        result["request"] = request_text
         result["topic"] = topic_text
         result["emotion"] = emo_text
         result["answer"] = generated_text
-        
+
         return result
