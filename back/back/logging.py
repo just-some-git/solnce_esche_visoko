@@ -20,23 +20,59 @@ CUSTOM_LOGGING = {
     },
 
     "formatters": {
-        "default_formatter": {
-            "()": "django.utils.log.ServerFormatter",
-            "format": "[{server_time}] / {levelname} \n"
+        "console_formatter": {
+            "format": "[{asctime}] / {levelname} / {name} \n"
                       "{message} \n",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
             "style": "{",
-        }
+        },
+        "console_warning_formatter": {
+            "format": "[{asctime}] / {levelname} / {name} \n"
+                      "{pathname} \n"
+                      "{message} \n",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "style": "{",
+        },
+        "console_error_formatter": {
+            "format": "[{asctime}] / {levelname} / {name} \n"
+                      "{pathname} \n"
+                      "{exc_info} \n"
+                      "{message} \n",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "style": "{",
+        },
+        "file_formatter": {
+            "format": "[{asctime}] / {levelname} / {name} \n"
+                      "{message} \n",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "style": "{",
+        },
+        "file_warning_formatter": {
+            "format": "[{asctime}] / {levelname} / {name} \n"
+                      "{pathname} \n"
+                      "{message} \n",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "style": "{",
+        },
+        "file_error_formatter": {
+            "format": "[{asctime}] / {levelname} / {name} \n"
+                      "{pathname} \n"
+                      "{exc_info} \n"
+                      "{message} \n",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
+            "style": "{",
+        },
     },
 
     "handlers": {
         # DEBUG = True
-        "debug_console_debug_true": {
-            "level": "DEBUG",
+        "info_console_debug_true": {
+            "level": "INFO",
             "filters": [
                 "require_debug_true",
             ],
             "class": "logging.StreamHandler",
-            "formatter": "default_formatter",
+            "formatter": "console_formatter",
         },
         "warning_console_debug_true": {
             "level": "WARNING",
@@ -44,7 +80,7 @@ CUSTOM_LOGGING = {
                 "require_debug_true",
             ],
             "class": "logging.StreamHandler",
-            "formatter": "default_formatter",
+            "formatter": "console_warning_formatter",
         },
         "warning_file_debug_true": {
             "level": "WARNING",
@@ -52,8 +88,8 @@ CUSTOM_LOGGING = {
                 "require_debug_true",
             ],
             "class": "logging.FileHandler",
-            "formatter": "default_formatter",
-            "filename": f"{LOG_BASE_DIR}/logs/warning.log",
+            "formatter": "file_warning_formatter",
+            "filename": f"{LOG_BASE_DIR}/logs/debug/warning.log",
         },
         "error_console_debug_true": {
             "level": "ERROR",
@@ -61,7 +97,7 @@ CUSTOM_LOGGING = {
                 "require_debug_true",
             ],
             "class": "logging.StreamHandler",
-            "formatter": "default_formatter",
+            "formatter": "console_error_formatter",
         },
         "error_file_debug_true": {
             "level": "ERROR",
@@ -69,8 +105,8 @@ CUSTOM_LOGGING = {
                 "require_debug_true",
             ],
             "class": "logging.FileHandler",
-            "formatter": "default_formatter",
-            "filename": f"{LOG_BASE_DIR}/logs/error.log",
+            "formatter": "file_error_formatter",
+            "filename": f"{LOG_BASE_DIR}/logs/debug/error.log",
         },
         "critical_console_debug_true": {
             "level": "CRITICAL",
@@ -78,7 +114,7 @@ CUSTOM_LOGGING = {
                 "require_debug_true",
             ],
             "class": "logging.StreamHandler",
-            "formatter": "default_formatter",
+            "formatter": "console_error_formatter",
         },
         "critical_file_debug_true": {
             "level": "CRITICAL",
@@ -86,8 +122,8 @@ CUSTOM_LOGGING = {
                 "require_debug_true",
             ],
             "class": "logging.FileHandler",
-            "formatter": "default_formatter",
-            "filename": f"{LOG_BASE_DIR}/logs/critical.log",
+            "formatter": "file_error_formatter",
+            "filename": f"{LOG_BASE_DIR}/logs/debug/critical.log",
         },
 
         # DEBUG = False
@@ -97,8 +133,8 @@ CUSTOM_LOGGING = {
                 "require_debug_false",
             ],
             "class": "logging.FileHandler",
-            "formatter": "default_formatter",
-            "filename": f"{LOG_BASE_DIR}/logs/info_prod.log",
+            "formatter": "file_formatter",
+            "filename": f"{LOG_BASE_DIR}/logs/prod/info_prod.log",
         },
         "warning_file_debug_false": {
             "level": "WARNING",
@@ -106,8 +142,8 @@ CUSTOM_LOGGING = {
                 "require_debug_false",
             ],
             "class": "logging.FileHandler",
-            "formatter": "default_formatter",
-            "filename": f"{LOG_BASE_DIR}/logs/warning_prod.log",
+            "formatter": "file_warning_formatter",
+            "filename": f"{LOG_BASE_DIR}/logs/prod/warning_prod.log",
         },
         "error_file_debug_false": {
             "level": "ERROR",
@@ -115,8 +151,8 @@ CUSTOM_LOGGING = {
                 "require_debug_false",
             ],
             "class": "logging.FileHandler",
-            "formatter": "default_formatter",
-            "filename": f"{LOG_BASE_DIR}/logs/error_prod.log",
+            "formatter": "file_error_formatter",
+            "filename": f"{LOG_BASE_DIR}/logs/prod/error_prod.log",
         },
         "critical_file_debug_false": {
             "level": "CRITICAL",
@@ -124,15 +160,15 @@ CUSTOM_LOGGING = {
                 "require_debug_false",
             ],
             "class": "logging.FileHandler",
-            "formatter": "default_formatter",
-            "filename": f"{LOG_BASE_DIR}/logs/critical_prod.log",
+            "formatter": "file_error_formatter",
+            "filename": f"{LOG_BASE_DIR}/logs/prod/critical_prod.log",
         },
     },
 
     "loggers": {
         "django.request": {
             "handlers": [
-                "debug_console_debug_true",
+                "info_console_debug_true",
                 "warning_console_debug_true",
                 "warning_file_debug_true",
                 "error_console_debug_true",
@@ -145,10 +181,11 @@ CUSTOM_LOGGING = {
                 "critical_file_debug_false",
             ],
             "level": "INFO",
+            "propagate": False,
         },
         "django.server": {
             "handlers": [
-                "debug_console_debug_true",
+                "info_console_debug_true",
                 "warning_console_debug_true",
                 "warning_file_debug_true",
                 "error_console_debug_true",
@@ -161,10 +198,11 @@ CUSTOM_LOGGING = {
                 "critical_file_debug_false",
             ],
             "level": "INFO",
+            "propagate": False,
         },
         "django.db.backends": {
             "handlers": [
-                "debug_console_debug_true",
+                "info_console_debug_true",
                 "warning_console_debug_true",
                 "warning_file_debug_true",
                 "error_console_debug_true",
@@ -177,6 +215,7 @@ CUSTOM_LOGGING = {
                 "critical_file_debug_false",
             ],
             "level": "INFO",
+            "propagate": False,
         },
     },
 }
