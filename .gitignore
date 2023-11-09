@@ -1,5 +1,6 @@
 /back/static/
 !*.gitkeep
+!**.gitkeep
 
 # Only for Development only
 **/migrations/**
@@ -170,7 +171,8 @@ cython_debug/
 .idea/
 
 # Logs
-logs
+#logs/
+!/logs/.gitkeep
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
