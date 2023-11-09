@@ -1,11 +1,15 @@
+import whisper
 from elevenlabs import set_api_key, voices, generate
 from elevenlabs.api import Voice
 import g4f
 import os
 from datetime import datetime
 
-class VoiceGeneratorFromText:
+class VoiceGenerator:
     def __init__(self):
+        # load whisper model
+        self.model = whisper.load_model("medium") 
+        # load voice generator model
         self.API_KEY = 'e8674ea3cacda897ad20e57e6786fa26'
         set_api_key(self.API_KEY) 
         self.voices = voices()
@@ -57,21 +61,20 @@ class VoiceGeneratorFromText:
             
         return text
 
-    def generate_answer(self, text):
-        # инициализация словаря - результата запроса
+    def load_path(self, path):
         result = {}
-        # фиксация времени начала выполнения кода
         result["timestamp"] = "start " + datetime.now().strftime("%M:%S")
-        # переопределяем входную переменную в локальную, которая у нас есть в изначальном классе
-        # в первом варианте сюда присваивается текстовое значение результата считывания голоса whisper
-        request_text = text
-        # создаем промпты для определия темы запроса и эмоционального окраса текста запроса, основной промпт берем из глобальной переменной
-        prompt_topic = f'{request_text} определи тему вопроса из предложенных тем: {self.topics} \
-        Представь, что ты можешь точно определить тему и выведи только одно единственное ее название'
+        options = {"language": "RU"}
+        audio = whisper.load_audio(path)
+        request = whisper.transcribe(self.model, audio, **options)
+        request_text = request["text"]
+
+        prompt_topic = f'давай поиграем в игру: ты отвечаешь только словами из следующего списка: {self.topics} \
+        ответь подбери наиболее подходящий вариант из твоего списка слов: ' + request_text
         prompt_emo = request_text + ' - определи эмоцию вопроса из вариантов: веселая, нейтральная, грустная, озабоченная. \
             ответ должен быть одним словом из предложенных эмоций'
         prompt_request = request_text + self.prompt_request_template
-        # обращаемся к GPT-3.5 через api g4f
+        
         topic_text = self._use_GPT(prompt_topic)
         result["timestamp"] += " text topic " + datetime.now().strftime("%M:%S")
         emo_text = self._use_GPT(prompt_emo)
@@ -79,7 +82,6 @@ class VoiceGeneratorFromText:
         generated_text = self._use_GPT(prompt_request)
         result["timestamp"] += " text generated " + datetime.now().strftime("%M:%S")
         
-        # синтезируем речь 
         audio_response = generate(
             text=generated_text,
             voice=self.voice,              
@@ -91,7 +93,7 @@ class VoiceGeneratorFromText:
             audio_file.write(audio_response)
         result["timestamp"] += " syntez complete " + datetime.now().strftime("%M:%S")
         
-        result["request"] = request_text
+        #result["request"] = request_text
         result["topic"] = topic_text
         result["emotion"] = emo_text
         result["path"] = audio_response_path
