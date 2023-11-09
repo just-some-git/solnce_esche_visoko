@@ -63,7 +63,7 @@ class VoiceGeneratorFromText:
             
         return text
 
-    def generate_answer(self, text):
+    def generate_answer(self, text: str):
         # инициализация словаря - результата запроса
         result = {}
         # фиксация времени начала выполнения кода
