@@ -57,7 +57,7 @@ class VoiceGeneratorFromText:
         text = ""
         for message in response:
             text += message
-        
+            
         if "日" in text:
             text = self._use_GPT(prompt, counter + 1)        
             
@@ -72,8 +72,8 @@ class VoiceGeneratorFromText:
         # в первом варианте сюда присваивается текстовое значение результата считывания голоса whisper
         request_text = text
         # создаем промпты для определия темы запроса и эмоционального окраса текста запроса, основной промпт берем из глобальной переменной
-        prompt_topic = f'{request_text} определи тему вопроса из предложенных тем: {self.topics} \
-        Представь, что ты можешь точно определить тему и выведи только одно единственное ее название'
+        prompt_topic = request_text + ' Представь, что ты можешь точно определить тему и \
+            выведи только одно единственное ее название из предложенных тем: ' + self.topics
         prompt_emo = request_text + ' - определи эмоцию вопроса из вариантов: веселая, нейтральная, грустная, озабоченная. \
             ответ должен быть одним словом из предложенных эмоций'
         prompt_request = request_text + self.prompt_request_template
