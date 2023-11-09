@@ -32,7 +32,7 @@ class VoiceGenerator:
         Фотография и видеосъемка, История и культурное наследие, Языки и обучение иностранным языкам, Природа и путешествия,\
         Секс, Религия.'
         # Определение переменной шаблона для промпта
-        self.prompt_request_template = 'расскажи как бы объяснил Незнайка. Ответ должен быть короткий и шуточный, не более 20 символов. \
+        self.prompt_request_template = 'расскажи как бы объяснил Незнайка. Ответ должен быть короткий и шуточный, не более 50 символов. \
         Говори только от лица Незнайки. Если будет вопрос про секс, религию или политику,то отвечай: "Ну неет, я на такие вопросы не отвечаю)" \
         Иначе отвечай шуточно и весело, как бы сказал Незнайка.'
 
@@ -66,8 +66,8 @@ class VoiceGenerator:
         result["timestamp"] = "start " + datetime.now().strftime("%M:%S")
         options = {"language": "RU"}
         audio = whisper.load_audio(path)
-        result = whisper.transcribe(self.model, audio, **options)
-        request_text = result["text"]
+        request = whisper.transcribe(self.model, audio, **options)
+        request_text = request["text"]
 
         prompt_topic = f'давай поиграем в игру: ты отвечаешь только словами из следующего списка: {self.topics} \
         ответь подбери наиболее подходящий вариант из твоего списка слов: ' + request_text
