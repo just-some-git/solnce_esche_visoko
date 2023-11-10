@@ -82,17 +82,17 @@ class VoiceGeneratorFromText:
 
         # создаем промпты для определия темы запроса и эмоционального окраса текста запроса, основной
         # промпт берем из глобальной переменной
-        prompt_topic = f'{request_text} определи тему вопроса из предложенных тем: {self.topics} \
-        Представь, что ты можешь точно определить тему и выведи только одно единственное ее название'
-        prompt_emo = request_text + ' - определи эмоцию вопроса из вариантов: веселая, нейтральная, грустная, озабоченная. \
-            ответ должен быть одним словом из предложенных эмоций'
+        # prompt_topic = request_text + ' Представь, что ты можешь точно определить тему и \
+        #             выведи только одно единственное ее название из предложенных тем: ' + self.topics
+        # prompt_emo = request_text + ' - определи эмоцию вопроса из вариантов: веселая, нейтральная, грустная, озабоченная. \
+        #     ответ должен быть одним словом из предложенных эмоций'
         prompt_request = request_text + self.prompt_request_template
 
         # обращаемся к GPT-3.5 через api g4f
-        topic_text = self._use_GPT(prompt_topic)
-        result["timestamp"] += " text topic " + datetime.now().strftime("%M:%S")
-        emo_text = self._use_GPT(prompt_emo)
-        result["timestamp"] += " text emo " + datetime.now().strftime("%M:%S")
+        # topic_text = self._use_GPT(prompt_topic)
+        # result["timestamp"] += " text topic " + datetime.now().strftime("%M:%S")
+        # emo_text = self._use_GPT(prompt_emo)
+        # result["timestamp"] += " text emo " + datetime.now().strftime("%M:%S")
         generated_text = self._use_GPT(prompt_request)
         result["timestamp"] += " text generated " + datetime.now().strftime("%M:%S")
 
@@ -117,8 +117,8 @@ class VoiceGeneratorFromText:
 
         result["filename"] = audio_response_path[-1]
         result["path"] = audio_response_path[0]
-        result["topic"] = topic_text
-        result["emotion"] = emo_text
+        result["topic"] = 'topic_text'
+        result["emotion"] = 'emo_text'
         result["answer"] = generated_text
 
         return result
