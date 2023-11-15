@@ -11,24 +11,21 @@ from django.http import (
 )
 
 from .models import Question, Answer
-from DS.VoiceGeneratorFromText import VoiceGeneratorFromText
+from DS.VoiceGenerator import VoiceGenerator
 
 
-generator = VoiceGeneratorFromText()
+generator = VoiceGenerator()
 
 
 def create_response(output_json: dict, pk: int) -> HttpResponseBase:
     try:
-        topic = output_json['topic']
-        emotion = output_json['emotion']
+        topic = output_json['generated_topic']
+        emotion = output_json['emo_text']
         full_path = output_json['path']
-        filename = output_json['filename']
-        ans_text = output_json['answer']
-        timelog = output_json['timestamp']
+        filename = full_path.split(sep='/')[-1]
+        ans_text = output_json['answer_text']
     except KeyError as e:
         return HttpResponseServerError('Invalid or missing JSON key: %s' % e)
-
-    print(timelog)
 
     quest = get_object_or_404(
         klass=Question,
@@ -77,7 +74,7 @@ def question(request: HttpRequest) -> HttpResponseBase:
         )
         new_question_id = new_question.pk
 
-        result = generator.generate_answer(text=text)
+        result = generator.generate_answer(request_text=text)
 
         response = create_response(
             output_json=result,

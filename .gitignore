@@ -1,4 +1,6 @@
 /back/static/
+/back/media/
+!**/back/media/.gitkeep
 !*.gitkeep
 !**.gitkeep
 
