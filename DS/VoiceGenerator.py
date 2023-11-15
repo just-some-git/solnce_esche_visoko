@@ -1,8 +1,11 @@
+import os
+from datetime import datetime
+from multiprocessing import Process
+from multiprocessing import Queue
 from elevenlabs import set_api_key, voices, generate
 from elevenlabs.api import Voice
 import g4f
-import os
-from datetime import datetime
+
 
 class VoiceGenerator:
     def __init__(self):
@@ -76,27 +79,30 @@ class VoiceGenerator:
                 return given
         return "Undefined"
     
-    def _get_topic(self, request_text):
+    def _get_topic(self, queue: Queue, request_text: str):
         prompt_topic = request_text + self.prompt_topic_template + self.topics
         generated_topic = self._use_GPT(prompt_topic)
         topics = self.topics.split(', ')
         topic_text = self._check_text(generated_topic, topics)
         
-        return generated_topic, topic_text
+        answer = {'generated_topic': generated_topic, 'topic_text': topic_text}
+        queue.put(answer)
         
-    def _get_emo(self, request_text):
+    def _get_emo(self, queue: Queue, request_text: str):
         prompt_emo = request_text + self.prompt_emo_template + self.emos
         generated_emo = self._use_GPT(prompt_emo)
         emos = self.emos.split(', ')
         emo_text = self._check_text(generated_emo, emos)
         
-        return generated_emo, emo_text
+        answer = {'generated_emo': generated_emo, 'emo_text': emo_text}
+        queue.put(answer)
     
-    def _get_answer(self, request_text):
+    def _get_answer(self, queue: Queue, request_text: str):
         prompt_request = request_text + self.prompt_request_template
         generated_text = self._use_GPT(prompt_request)
         
-        return generated_text
+        answer = {'generated_text': generated_text}
+        queue.put(answer)
         
     def _check_answer(self, generated_answer, topic_text, emo_text):
         if topic_text in self.banned_topics:
@@ -119,25 +125,44 @@ class VoiceGenerator:
         return path
     
     def generate_answer(self, request_text: str):
+        
+        threads = []
+        queue = Queue()
+        threads.append(Process(target=self._get_answer, args=(queue, request_text)))
+        threads.append(Process(target=self._get_topic, args=(queue, request_text)))
+        threads.append(Process(target=self._get_emo, args=(queue, request_text)))
+
+        for t in threads:
+            t.start()
+
+        for t in threads:
+            t.join(timeout=1000)
+
         result = {}
-        result["request"] = request_text
-        # фиксация времени начала выполнения кода
-        result["timestamp"] = "start " + datetime.now().strftime("%M:%S")
+        while not queue.empty():
+            try:
+                job = queue.get()
+                for k in job:
+                    result[k] = job[k]
+            except:
+                print("END")
+                # break
         
-        generated_topic, topic_text = self._get_topic(request_text=request_text)
-        result["timestamp"] += " text topic " + datetime.now().strftime("%M:%S")
-        generated_emo, emo_text = self._get_emo(request_text=request_text)
-        result["timestamp"] += " text emo " + datetime.now().strftime("%M:%S")
-        generated_answer = self._get_answer(request_text=request_text)
-        result["timestamp"] += " text generated " + datetime.now().strftime("%M:%S")
-        answer_text = self._check_answer(generated_answer, topic_text, emo_text)
-        
+        answer_text = self._check_answer(result["generated_text"], result["topic_text"], result["emo_text"])
         # синтезируем речь 
-        result["path"] = self._use_voice_syntesis(generated_answer)
-        result["timestamp"] += " syntez complete " + datetime.now().strftime("%M:%S")
-        
-        result ["generated_topic"], result["topic"] = generated_topic, topic_text
-        result ["generated_emo"], result["emo"] = generated_emo, emo_text
-        result ["generated_answer"], result["answer_text"] = generated_answer, answer_text
+        result["path"] = self._use_voice_syntesis(answer_text)
+        result["answer_text"] = answer_text
         
         return result
+
+if __name__ == '__main__':
+    gen = VoiceGenerator()
+    q = ""
+    while q != 'exit':
+        q = input("Вопрос: ")
+
+        t0 = datetime.now()
+
+        print(gen.generate_answer(q))
+
+        print((datetime.now() - t0).total_seconds())
