@@ -171,7 +171,8 @@ class VoiceGenerator:
         result["path"] = self._use_voice_syntesis(answer_text)
         result["answer_text"] = answer_text
         result["gpt_recall"] = self._attempt.value
-        
+        print(result)
+
         return result
 
 
