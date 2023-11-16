@@ -2,6 +2,7 @@ import os
 from datetime import datetime
 from multiprocessing import Process
 from multiprocessing import Queue
+from multiprocessing import Value
 from elevenlabs import set_api_key, voices, generate
 from elevenlabs.api import Voice
 import g4f
@@ -40,9 +41,10 @@ class VoiceGenerator:
         self.prompt_emo_template = '\nДавай поиграем в игру - представь, что ты можешь точно определить эмоцию и \
         в нашей игре запрещается писать любой другой текст, кроме предложенного, максимальное количество символов в ответе должно быть 20, \
         а теперь выведи только один выбор из предложенных эмоций: '
-        self.prompt_request_template = '\nДавай поиграем в игру - представь, что ты Незнайка и ответь на вопрос который задан выше шуточно и весело. \
+        self.prompt_request_template = '?\nДавай поиграем в игру - представь, что ты Незнайка и ответь на вопрос который задан выше шуточно и весело. \
         Ответ должен быть короткий и шуточный, не более 50 символов. Формат ответа - реплика, не используй ответ от второго лица \
         не используй интонационное вступление или вводную часть предложения, предваряющая сам ответ'
+        self._attempt = Value('i', 0)
 
     def _get_unique_filename(self, prefix, extension):
         timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
@@ -72,7 +74,9 @@ class VoiceGenerator:
             
         if "日" in text or "r" in text:
             text = self._use_GPT(prompt, counter + 1)        
-            
+        # счетчик вызова функции по рекурсии
+        self._attempt.value += counter
+        
         return text
     
     def _check_text(self, text, given_list):
@@ -127,7 +131,7 @@ class VoiceGenerator:
         return path
     
     def generate_answer(self, request_text: str):
-        
+        self._attempt.value = 0
         threads = []
         queue = Queue()
         threads.append(Process(target=self._get_answer, args=(queue, request_text)))
@@ -154,6 +158,7 @@ class VoiceGenerator:
         # синтезируем речь 
         result["path"] = self._use_voice_syntesis(answer_text)
         result["answer_text"] = answer_text
+        result["gpt_recall"] = self._attempt.value
         
         return result
 
