@@ -8,11 +8,7 @@ const useRecordQuestion = () => {
 		recognition.start();
 	};
 
-	const stopReq = () => {
-		recognition.stop();
-	};
-
-	return { startReq, recognition, stopReq };
+	return { startReq, recognition };
 };
 
 export default useRecordQuestion;
