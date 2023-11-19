@@ -19,4 +19,9 @@ def main():
 
 
 if __name__ == '__main__':
+
+    # Uncomment this to run server via PyInstaller .exe file:
+    # from multiprocessing import freeze_support
+    # freeze_support()
+
     main()
