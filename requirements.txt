@@ -2,7 +2,7 @@ Django==4.2.6
 django-cors-headers==4.3.0
 elevenlabs==0.2.26
 ffmpeg==1.4
-g4f==0.1.8.3
+g4f==0.1.8.7
 openai-whisper==20230918
 pyinstaller==6.2.0
 python-dotenv==1.0.0
