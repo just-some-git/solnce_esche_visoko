@@ -202,6 +202,12 @@ const App: FC = () => {
 				<Loading arrAnimation={arrAnimation} />
 			) : (
 				<div className='wrapper__app'>
+					<img
+						src='./images/SkillFactory.svg'
+						alt='img'
+						className='logo-skillfactory'
+					/>
+					<img src='./images/ecsmo.jpg' alt='img' className='logo-ecsmo' />
 					{!viewResponce ? (
 						<img className='app__hello' src='./images/hello.png' alt='hello' />
 					) : (
