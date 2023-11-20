@@ -1,6 +1,7 @@
 import { FC, useEffect, useState } from 'react';
 import useActualeDate from '../hooks/useActualDate';
 import useRecordQuestion from '../hooks/useRecordQuestion';
+import Loading from './loading/Loading';
 
 const App: FC = () => {
 	const [isMicro, setIsMicro] = useState<boolean>(true);
@@ -13,35 +14,19 @@ const App: FC = () => {
 
 	const [isWaitAnswer, setIsWaitAnswer] = useState<boolean>(false);
 
-	// let text = '';
-	const [text, setText] = useState();
-	const [test, setTest] = useState(false);
+	const [text, setText] = useState<string>('');
+	const [test, setTest] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
 
-	let nameAudio;
+	let nameAudio: string;
 
 	const { actualDate } = useActualeDate();
 
 	const [viewResponce, setViewResponce] = useState<boolean>(false);
 
-	const { startReq, recognition, stopReq } = useRecordQuestion();
-	// const {
-	// 	receiveAudioStream,
-	// 	receivedAudioUrl,
-	// 	addText,
-	// 	text,
-	// 	setText,
-	// 	test,
-	// 	setTest,
-	// 	textRequest,
-	// 	durationAudio,
-	// } = useRequestQuestion();
+	const { startReq, recognition } = useRecordQuestion();
 
 	useEffect(() => {
-		console.log('use:', text);
-	}, [text]);
-
-	useEffect(() => {
-		// когда время длительности аудио проходит, убирает текст ответа. А другой юз эффект меняет анимацию
 		let stopAnim = setTimeout(() => {
 			setViewResponce(false);
 		}, durationAudio);
@@ -50,16 +35,16 @@ const App: FC = () => {
 		};
 	}, [durationAudio]);
 
-	let receivedAudioUrl;
+	let receivedAudioUrl: string;
 
-	const playAudio = audioUrl => {
+	const playAudio = (audioUrl: string) => {
 		const audio = new Audio(audioUrl);
 		audio.play();
 		setViewResponce(true);
 		setAnimNeznaika('i_do_not_know');
 	};
 
-	const getAudioDuration = audioUrl => {
+	const getAudioDuration = (audioUrl: string) => {
 		return new Promise((resolve, reject) => {
 			const audio = new Audio(audioUrl);
 			audio.onloadedmetadata = () => {
@@ -76,7 +61,6 @@ const App: FC = () => {
 		const formData = new FormData();
 		nameAudio = actualDate();
 
-		console.log(nameAudio);
 		formData.append('name', nameAudio);
 		formData.append('text', text);
 
@@ -88,15 +72,14 @@ const App: FC = () => {
 					body: formData,
 				}
 			);
-			const audioStream = response.body;
+			const audioStream: ReadableStream<Uint8Array> | null = response.body;
 
-			// console.log('header', [...response.headers.entries()]); //перебор заголовков
-
-			const reader = audioStream.getReader();
+			const reader: ReadableStreamDefaultReader<Uint8Array> | undefined =
+				audioStream?.getReader();
 			const audioChunks = [];
 
 			while (true) {
-				const { done, value } = await reader.read();
+				const { done, value } = await reader?.read();
 
 				if (done) {
 					break;
@@ -109,18 +92,14 @@ const App: FC = () => {
 			const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 			const audioUrl = URL.createObjectURL(audioBlob);
 			receivedAudioUrl = audioUrl;
-			console.log('Аудиофайл успешно получен:', audioUrl);
 
-			/////
 			getAudioDuration(audioUrl)
 				.then(duration => {
-					console.log('Длительность аудиофайла:', duration, 'миллисекунд');
 					setDurationAudio(duration);
 				})
 				.catch(error => {
 					console.error('Ошибка при получении длительности аудиофайла:', error);
 				});
-			/////
 		} catch (error) {
 			console.error('Ошибка при загрузке аудиофайла:', error);
 		}
@@ -142,36 +121,14 @@ const App: FC = () => {
 	const handleMicroClickPlay = () => {
 		if (isMicro) {
 			startReq();
-			console.log('play');
 			setIsMicro(false);
 		}
 	};
 
 	useEffect(() => {
-		//HELP: ОСНОВНОЙ ВАРИАНТ АНИМАЦИИ
-		// когда исчезает текст ответа, меняет анимацию на начальную
 		if (!viewResponce) {
 			setAnimNeznaika('i_do_not_know_hello');
 		} else {
-			// if (textRequest === 'булка') {
-			// 	let anim = setTimeout(() => {
-			// 		setAnimNeznaika('i_do_not_know_wait');
-			// 		console.log('poluchilos');
-			// 	}, durationAudio - 3000);
-
-			// 	return () => {
-			// 		clearTimeout(anim);
-			// 	};
-			// } else if (textRequest === 'пусто') {
-			// 	let anim = setTimeout(() => {
-			// 		setAnimNeznaika('negative_response');
-			// 		console.log('poluchilos');
-			// 	}, durationAudio - 3000);
-
-			// 	return () => {
-			// 		clearTimeout(anim);
-			// 	};
-
 			if (durationAudio <= 6000) {
 				let anim = setTimeout(() => {
 					setAnimNeznaika('i_do_not_know_wait');
@@ -198,30 +155,13 @@ const App: FC = () => {
 		}
 	}, [viewResponce]);
 
-	// useEffect(() => { //HELP: ЗАПАСНОЙ ВАРИАНТ АНИМАЦИИ
-	// 	if (!viewResponce) {
-	// 		setAnimNeznaika('i_do_not_know_hello');
-	// 	} else {
-	// 		let anim = setTimeout(() => {
-	// 			setAnimNeznaika('i_do_not_know_wait');
-	// 		}, durationAudio - 3000);
-
-	// 		return () => {
-	// 			clearTimeout(anim);
-	// 		};
-	// 	}
-	// }, [viewResponce]);
-
 	recognition.onresult = async function (event) {
 		const transcript = event.results[0][0].transcript;
-		//Если делать черезе переменную test a не useState// text = transcript;
+
 		setText(transcript);
 		if (event.results[0].isFinal) {
 			setIsMicro(true);
 		}
-		//Если делать черезе переменную test a не useState // await receiveAudioStream();
-		// await addText();
-		// await playAudio(receivedAudioUrl);
 		setTest(true);
 	};
 
@@ -237,11 +177,8 @@ const App: FC = () => {
 			setTest(false);
 		}
 	}, [test]);
-	//////////////////
-	const [isLoading, setIsLoading] = useState(true);
 
 	useEffect(() => {
-		//таблетка от бликов
 		const animLoading = setTimeout(() => {
 			setIsLoading(false);
 		}, 13000);
@@ -258,52 +195,11 @@ const App: FC = () => {
 		'micro',
 		'bg_main',
 	];
-	//////////////////////////
 
 	return (
 		<>
 			{isLoading ? (
-				<div className='wrapper__loading'>
-					{arrAnimation.map(anim => {
-						return (
-							<div
-								key={anim}
-								className='test'
-								style={{ animation: `${anim} 3s linear infinite` }}
-							></div>
-						);
-					})}
-
-					<svg
-						className='svg-animation'
-						width='100'
-						height='100'
-						xmlns='http://www.w3.org/2000/svg'
-					>
-						<circle
-							cx='50'
-							cy='50'
-							r='40'
-							stroke='#3498db'
-							strokeWidth='4'
-							fill='none'
-						>
-							<animate
-								attributeName='stroke-dashoffset'
-								dur='2s'
-								from='0'
-								to='502'
-								repeatCount='indefinite'
-							/>
-							<animate
-								attributeName='stroke-dasharray'
-								dur='2s'
-								values='150.79644737231007 100.53096491487338;1 250;150.79644737231007 100.53096491487338'
-								repeatCount='indefinite'
-							/>
-						</circle>
-					</svg>
-				</div>
+				<Loading arrAnimation={arrAnimation} />
 			) : (
 				<div className='wrapper__app'>
 					{!viewResponce ? (
