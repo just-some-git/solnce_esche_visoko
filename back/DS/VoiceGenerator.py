@@ -14,10 +14,10 @@ from back.settings import MEDIA_ROOT_ANSWERS
 
 class VoiceGenerator:
     def __init__(self):
-        self.API_KEY = 'e8674ea3cacda897ad20e57e6786fa26'
+        self.API_KEY = os.getenv('VG_API_KEY')
         set_api_key(self.API_KEY) 
         self.voices = voices()
-        self.voice = Voice.from_id('8AsiUYrhphlnBNuggBCK')
+        self.voice = Voice.from_id(os.getenv('VOICE_ID'))
         self.voice.settings.stability = 0.1
         # список тем лучше предоставить в строковом формате, чтобы избежать лишний код по переводу списка в строку
         self.topics = 'Погода, Политика, Спорт, \
