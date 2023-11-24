@@ -51,21 +51,21 @@ body {
 }
 
 .wrapper__app {
-	// width: 90vw;
+	width: 90vw;
+	height: 100vh;
+	// width: 63vw;
 	// height: 99vh;
-	width: 63vw;
-	height: 99vh;
 	background-image: url('./images/animation_images/BG_one/Main_00000.png');
 	background-position: center;
 	background-repeat: no-repeat;
 	background-size: cover; //если формат будет 4:3 то включить от отпозиционировать по-другому незнайку и микрофон, т.к. на разрешении пк съедает верх и низ фона
-	animation: bg_main 15s linear infinite;
+	animation: bg_main 12s linear infinite;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
 
 	> .text_answer {
-		margin-top: 4%;
+		margin-top: 15vh;
 		position: relative;
 		align-self: center;
 		padding: 60px 60px;
@@ -90,10 +90,10 @@ body {
 
 	> .animation {
 		position: absolute;
-		bottom: 5%;
-		left: 10%;
-		width: 40vw;
-		height: 40vh;
+		bottom: 8%;
+		left: 9%;
+		width: 28vw;
+		height: 78vh;
 		background-image: url('./images/animation_images/hello/Final_00000.png');
 		background-position: center;
 		background-repeat: no-repeat;
@@ -101,18 +101,30 @@ body {
 		// animation: i_do_not_no_hello 3s linear infinite;
 	}
 
+	> .animation_wait {
+		position: absolute;
+		bottom: 8%;
+		left: 9%;
+		width: 28vw;
+		height: 78vh;
+		background-image: url('./images/animation_images/listen_to_the_questions/Поворот_00047.png');
+		background-position: center;
+		background-repeat: no-repeat;
+		background-size: cover;
+	}
+
 	> .app__hello {
-		width: 60%;
+		width: 43.8%;
 		align-self: center;
-		margin-top: 15%;
+		margin-top: 16.5vh;
 	}
 
 	> .block__app__micro {
 		align-self: center;
 		> .app__micro {
-			width: 100px;
-			height: 100px;
-			margin-bottom: 13px;
+			width: 24.5vh;
+			height: 24.5vh;
+			margin-bottom: 16.1vh;
 			position: relative;
 			z-index: 99;
 
@@ -122,8 +134,9 @@ body {
 		}
 
 		> .app__micro_active {
-			width: 136px;
-			height: 136px;
+			width: 40vh;
+			height: 40vh;
+			margin-bottom: 9vh;
 			background-image: url('./images/animation_images/Mic_Button/Mic_Button_00000.png');
 			background-position: center;
 			background-repeat: no-repeat;
@@ -137,4 +150,20 @@ body {
 			}
 		}
 	}
+}
+
+.logo-skillfactory {
+	width: 10%;
+	height: 6%;
+	position: absolute;
+
+	bottom: 8%;
+	padding-left: 20px;
+}
+
+.logo-ecsmo {
+	width: 10%;
+	padding-left: 20px;
+	position: absolute;
+	bottom: 1%;
 }

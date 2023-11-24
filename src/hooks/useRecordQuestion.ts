@@ -1,5 +1,7 @@
 const useRecordQuestion = () => {
-	const recognition = new (window.SpeechRecognition ||
+	// @ts-ignore
+	const recognition: any = new (window.SpeechRecognition ||
+		// @ts-ignore
 		window.webkitSpeechRecognition)();
 
 	recognition.lang = 'ru-RU';
@@ -8,11 +10,7 @@ const useRecordQuestion = () => {
 		recognition.start();
 	};
 
-	const stopReq = () => {
-		recognition.stop();
-	};
-
-	return { startReq, recognition, stopReq };
+	return { startReq, recognition };
 };
 
 export default useRecordQuestion;

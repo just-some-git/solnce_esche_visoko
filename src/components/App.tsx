@@ -1,49 +1,50 @@
 import { FC, useEffect, useState } from 'react';
 import useActualeDate from '../hooks/useActualDate';
 import useRecordQuestion from '../hooks/useRecordQuestion';
+import Loading from './loading/Loading';
 
 const App: FC = () => {
 	const [isMicro, setIsMicro] = useState<boolean>(true);
 
-	const [animNeznaika, setAnimNeznaika] = useState<string>('i_do_not_no_hello');
+	const [animNeznaika, setAnimNeznaika] = useState<string>(
+		'i_do_not_know_hello'
+	);
 	const [durationAudio, setDurationAudio] = useState<number>(0);
 	const [textRequest, setTextRequest] = useState<string>('');
 
-	let text = '';
+	const [isWaitAnswer, setIsWaitAnswer] = useState<boolean>(false);
 
-	let nameAudio;
+	const [text, setText] = useState<string>('');
+	const [test, setTest] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(true);
+
+	let nameAudio: string;
 
 	const { actualDate } = useActualeDate();
 
 	const [viewResponce, setViewResponce] = useState<boolean>(false);
 
-	const { startReq, recognition, stopReq } = useRecordQuestion();
+	const { startReq, recognition } = useRecordQuestion();
 
 	useEffect(() => {
-		console.log('use:', text);
-	}, [text]);
-
-	useEffect(() => {
-		let anim = setTimeout(() => {
-			// setAnimNeznaika('i_do_not_no_wait');
+		let stopAnim = setTimeout(() => {
 			setViewResponce(false);
 		}, durationAudio);
-
 		return () => {
-			clearTimeout(anim);
+			clearTimeout(stopAnim);
 		};
 	}, [durationAudio]);
 
-	let receivedAudioUrl;
+	let receivedAudioUrl: string;
 
-	const playAudio = audioUrl => {
+	const playAudio = (audioUrl: string) => {
 		const audio = new Audio(audioUrl);
 		audio.play();
 		setViewResponce(true);
-		setAnimNeznaika('i_do_not_no');
+		setAnimNeznaika('i_do_not_know');
 	};
 
-	const getAudioDuration = audioUrl => {
+	const getAudioDuration = (audioUrl: string) => {
 		return new Promise((resolve, reject) => {
 			const audio = new Audio(audioUrl);
 			audio.onloadedmetadata = () => {
@@ -60,7 +61,6 @@ const App: FC = () => {
 		const formData = new FormData();
 		nameAudio = actualDate();
 
-		console.log(nameAudio);
 		formData.append('name', nameAudio);
 		formData.append('text', text);
 
@@ -72,15 +72,14 @@ const App: FC = () => {
 					body: formData,
 				}
 			);
-			const audioStream = response.body;
+			const audioStream: ReadableStream<Uint8Array> | null = response.body;
 
-			// console.log('header', [...response.headers.entries()]);
-
-			const reader = audioStream.getReader();
+			const reader: ReadableStreamDefaultReader<Uint8Array> | undefined =
+				audioStream?.getReader();
 			const audioChunks = [];
 
 			while (true) {
-				const { done, value } = await reader.read();
+				const { done, value } = await reader!.read();
 
 				if (done) {
 					break;
@@ -93,18 +92,14 @@ const App: FC = () => {
 			const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
 			const audioUrl = URL.createObjectURL(audioBlob);
 			receivedAudioUrl = audioUrl;
-			console.log('Аудиофайл успешно получен:', audioUrl);
 
-			/////
 			getAudioDuration(audioUrl)
 				.then(duration => {
-					console.log('Длительность аудиофайла:', duration, 'секунд');
-					setDurationAudio(duration);
+					if (typeof duration === 'number') setDurationAudio(duration);
 				})
 				.catch(error => {
 					console.error('Ошибка при получении длительности аудиофайла:', error);
 				});
-			/////
 		} catch (error) {
 			console.error('Ошибка при загрузке аудиофайла:', error);
 		}
@@ -123,83 +118,125 @@ const App: FC = () => {
 		}
 	};
 
-	// const handleMicroClickStop = async () => {
-	// 	if (!isMicro) {
-	// 		await stopReq();
-	// 		await receiveAudioStream();
-	// 		await addText();
-	// 		await playAudio(receivedAudioUrl);
-	// 		console.log('stop');
-	// 		setIsMicro(!isMicro);
-	// 	}
-	// };
-
 	const handleMicroClickPlay = () => {
 		if (isMicro) {
 			startReq();
-			console.log('play');
 			setIsMicro(false);
 		}
 	};
 
 	useEffect(() => {
 		if (!viewResponce) {
-			setAnimNeznaika('i_do_not_no_hello');
+			setAnimNeznaika('i_do_not_know_hello');
+		} else {
+			if (durationAudio <= 6000) {
+				let anim = setTimeout(() => {
+					setAnimNeznaika('i_do_not_know_wait');
+				}, durationAudio - 3000);
+
+				return () => {
+					clearTimeout(anim);
+				};
+			} else {
+				let wait = setTimeout(() => {
+					setIsWaitAnswer(true);
+				}, 3000);
+
+				let anim = setTimeout(() => {
+					setIsWaitAnswer(false);
+					setAnimNeznaika('i_do_not_know_wait');
+				}, durationAudio - 3000);
+
+				return () => {
+					clearTimeout(anim);
+					clearTimeout(wait);
+				};
+			}
 		}
 	}, [viewResponce]);
 
-	recognition.onresult = async function (event) {
+	recognition.onresult = async function (event: any) {
 		const transcript = event.results[0][0].transcript;
-		text = transcript;
 
+		setText(transcript);
 		if (event.results[0].isFinal) {
 			setIsMicro(true);
 		}
-
-		await receiveAudioStream();
-		await addText();
-		await playAudio(receivedAudioUrl);
+		setTest(true);
 	};
 
-	return (
-		<div className='wrapper__app'>
-			<button
-				onClick={() => {
-					setAnimNeznaika('i_do_not_no');
-					setTimeout(() => setAnimNeznaika('i_do_not_no_hello'), 3000);
-				}}
-			>
-				кнопка 1
-			</button>
-			<button onClick={() => setAnimNeznaika('i_do_not_no_wait')}>
-				кнопка 2
-			</button>
-			<button onClick={() => setAnimNeznaika('i_do_not_no_hello')}>
-				кнопка 3
-			</button>
-			{!viewResponce ? (
-				<img className='app__hello' src='./images/hello.png' alt='hello' />
-			) : (
-				<p className='text_answer'>{textRequest}</p>
-			)}
-			<div
-				className='animation'
-				style={{ animation: `${animNeznaika} 3s linear infinite` }}
-			></div>
+	useEffect(() => {
+		const fetchData = async () => {
+			await receiveAudioStream();
+			await addText();
+			await playAudio(receivedAudioUrl);
+		};
 
-			<div className='block__app__micro'>
-				{isMicro ? (
+		if (test) {
+			fetchData();
+			setTest(false);
+		}
+	}, [test]);
+
+	useEffect(() => {
+		const animLoading = setTimeout(() => {
+			setIsLoading(false);
+		}, 13000);
+
+		return () => {
+			clearTimeout(animLoading);
+		};
+	}, []);
+	const arrAnimation = [
+		'i_do_not_know',
+		'i_do_not_know_wait',
+		'i_do_not_know_hello',
+		'negative_response',
+		'micro',
+		'bg_main',
+	];
+
+	return (
+		<>
+			{isLoading ? (
+				<Loading arrAnimation={arrAnimation} />
+			) : (
+				<div className='wrapper__app'>
 					<img
-						className='app__micro'
-						src='./images/micro.png'
-						alt='micro'
-						onClick={handleMicroClickPlay}
+						src='./images/SkillFactory.svg'
+						alt='img'
+						className='logo-skillfactory'
 					/>
-				) : (
-					<div className='app__micro_active'></div>
-				)}
-			</div>
-		</div>
+					<img src='./images/ecsmo.jpg' alt='img' className='logo-ecsmo' />
+					{!viewResponce ? (
+						<img className='app__hello' src='./images/hello.png' alt='hello' />
+					) : (
+						<p className='text_answer'>{textRequest}</p>
+					)}
+					{isWaitAnswer ? (
+						<div className='animation_wait'></div>
+					) : (
+						<div
+							className='animation'
+							style={{ animation: `${animNeznaika} 3s linear infinite` }}
+						></div>
+					)}
+
+					<div className='block__app__micro'>
+						{isMicro ? (
+							<img
+								className='app__micro'
+								src='./images/micro.png'
+								alt='micro'
+								onClick={handleMicroClickPlay}
+							/>
+						) : (
+							<div className='app__micro_active'></div>
+						)}
+					</div>
+				</div>
+			)}
+		</>
 	);
 };
 
