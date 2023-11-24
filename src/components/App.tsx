@@ -79,7 +79,7 @@ const App: FC = () => {
 			const audioChunks = [];
 
 			while (true) {
-				const { done, value } = await reader?.read();
+				const { done, value } = await reader!.read();
 
 				if (done) {
 					break;
@@ -95,7 +95,7 @@ const App: FC = () => {
 
 			getAudioDuration(audioUrl)
 				.then(duration => {
-					setDurationAudio(duration);
+					if (typeof duration === 'number') setDurationAudio(duration);
 				})
 				.catch(error => {
 					console.error('Ошибка при получении длительности аудиофайла:', error);
@@ -155,7 +155,7 @@ const App: FC = () => {
 		}
 	}, [viewResponce]);
 
-	recognition.onresult = async function (event) {
+	recognition.onresult = async function (event: any) {
 		const transcript = event.results[0][0].transcript;
 
 		setText(transcript);

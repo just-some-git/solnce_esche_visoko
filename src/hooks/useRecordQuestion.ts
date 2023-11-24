@@ -1,5 +1,7 @@
 const useRecordQuestion = () => {
-	const recognition = new (window.SpeechRecognition ||
+	// @ts-ignore
+	const recognition: any = new (window.SpeechRecognition ||
+		// @ts-ignore
 		window.webkitSpeechRecognition)();
 
 	recognition.lang = 'ru-RU';
